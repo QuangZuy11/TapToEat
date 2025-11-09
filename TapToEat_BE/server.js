@@ -1,11 +1,15 @@
 const express = require('express');
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
+const cors = require("cors");
 require("dotenv").config();
 
 const connectDB = require("./config/db");
 const ApiRouter = require("./routes");
 const app = express();
+
+// Middleware
+app.use(cors()); // Enable CORS for Android app
 app.use(bodyParser.json());
 app.use(morgan("dev"));
 

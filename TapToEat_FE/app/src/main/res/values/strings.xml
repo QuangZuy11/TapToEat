@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">TapToEat</string>
+    
+    <!-- Table Input Screen -->
+    <string name="restaurant_name">Nhà Hàng Quang Duy</string>
+    <string name="welcome_text">Xin chào quý khách</string>
+    <string name="subtitle_text">Chúc quý khách ngon miệng</string>
+    <string name="table_number_hint">Nhập số bàn</string>
+    <string name="start_button">Bắt đầu</string>
+    <string name="welcome_image">Welcome Image</string>
+    <string name="background_image">Restaurant Background</string>
+    <string name="restaurant_logo">Restaurant Logo</string>
+    <string name="decoration">Decoration</string>
+    <string name="powered_by">TapToEat - Quick Ordering System</string>
+    
+    <!-- Error Messages -->
+    <string name="error_empty_table">Vui lòng nhập số bàn</string>
+    <string name="error_invalid_table">Số bàn không hợp lệ</string>
+    <string name="error_table_not_found">Không tìm thấy bàn này</string>
+    <string name="error_network">Lỗi kết nối. Vui lòng thử lại</string>
+    
+    <!-- Loading -->
+    <string name="loading">Đang xử lý...</string>
 </resources>

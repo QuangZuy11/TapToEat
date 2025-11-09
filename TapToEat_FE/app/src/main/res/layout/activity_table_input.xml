@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".TableInputActivity">
+
+    <!-- Background Image - Bạn có thể thay thế bằng ảnh của bạn -->
+    <!-- Đặt ảnh vào drawable folder với tên: bg_restaurant.jpg hoặc bg_restaurant.png -->
+    <ImageView
+        android:id="@+id/ivBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bg_restaurant"
+        android:contentDescription="@string/background_image" />
+    
+    <!-- Overlay để làm tối ảnh nền (optional) -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background_overlay"
+        android:alpha="0.3" />
+
+    <!-- Main Content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:gravity="center">
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- Logo/Restaurant Icon -->
+            <ImageView
+                android:id="@+id/ivRestaurantLogo"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_restaurant"
+                android:contentDescription="@string/restaurant_logo"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_card_welcome"
+                android:padding="16dp"
+                android:elevation="8dp" />
+
+            <!-- Restaurant Name -->
+            <TextView
+                android:id="@+id/tvRestaurantName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/restaurant_name"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:shadowColor="@color/black"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="4"
+                android:layout_marginBottom="40dp"
+                android:fontFamily="sans-serif-medium" />
+
+            <!-- Welcome Text -->
+            <TextView
+                android:id="@+id/tvWelcomeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/welcome_text"
+                android:textSize="28sp"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:shadowColor="@color/black"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="4"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Subtitle -->
+            <TextView
+                android:id="@+id/tvSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/subtitle_text"
+                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:shadowColor="@color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3"
+                android:layout_marginBottom="40dp" />
+
+            <!-- Table Number Input -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilTableNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/table_number_hint"
+                style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+                app:boxBackgroundColor="@color/white"
+                app:boxStrokeColor="@color/primary"
+                app:hintTextColor="@color/primary"
+                app:startIconDrawable="@drawable/ic_table"
+                app:startIconTint="@color/primary"
+                app:boxStrokeWidth="2dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                android:layout_marginBottom="24dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etTableNumber"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:maxLength="3"
+                    android:textSize="20sp"
+                    android:textColor="@color/text_primary"
+                    android:padding="16dp"
+                    android:textStyle="bold" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Start Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnStart"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:text="@string/start_button"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/primary"
+                app:cornerRadius="12dp"
+                app:elevation="8dp"
+                app:icon="@drawable/ic_restaurant"
+                app:iconGravity="textStart"
+                app:iconPadding="12dp"
+                app:iconTint="@color/white"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp" />
+
+            <!-- Error Message -->
+            <TextView
+                android:id="@+id/tvError"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:visibility="gone"
+                android:background="@color/error"
+                android:padding="12dp"
+                android:drawableStart="@android:drawable/stat_notify_error"
+                android:drawablePadding="8dp"
+                tools:text="Số bàn không hợp lệ"
+                tools:visibility="visible" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</FrameLayout>
