@@ -41,9 +41,13 @@ dependencies {
     // ViewPager2 for tabs
     implementation("androidx.viewpager2:viewpager2:1.1.0")
     
+    // SwipeRefreshLayout
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    
     // Retrofit for networking
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
     implementation("com.google.code.gson:gson:2.10.1")
     
     // OkHttp logging for debugging

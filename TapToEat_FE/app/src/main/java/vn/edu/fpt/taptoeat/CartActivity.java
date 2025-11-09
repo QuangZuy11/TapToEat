@@ -224,9 +224,15 @@ public class CartActivity extends AppCompatActivity implements CartManager.CartC
                     cartItem.getNotes()
             );
             orderItems.add(item);
+            Log.d(TAG, "Order item: " + cartItem.getMenuItem().getName() + 
+                    " x" + cartItem.getQuantity() + 
+                    (cartItem.getNotes() != null ? " (" + cartItem.getNotes() + ")" : ""));
         }
 
-        ApiService.OrderRequest request = new ApiService.OrderRequest(sessionId, orderItems);
+        ApiService.OrderRequest request = new ApiService.OrderRequest(sessionId, tableNumber, orderItems);
+        
+        Log.d(TAG, "Placing order with sessionId: " + sessionId + 
+                ", tableNumber: " + tableNumber + ", items count: " + orderItems.size());
 
         // Call API
         ApiService apiService = RetrofitClient.getInstance().getApiService();
@@ -238,26 +244,56 @@ public class CartActivity extends AppCompatActivity implements CartManager.CartC
                                    @NonNull Response<ApiService.ApiResponse<ApiService.OrderResponse>> response) {
                 progressDialog.dismiss();
 
-                if (response.isSuccessful() && response.body() != null) {
-                    ApiService.ApiResponse<ApiService.OrderResponse> apiResponse = response.body();
-                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
-                        ApiService.OrderResponse orderResponse = apiResponse.getData();
+                Log.d(TAG, "Response code: " + response.code());
+                Log.d(TAG, "Response successful: " + response.isSuccessful());
+
+                if (response.isSuccessful()) {
+                    try {
+                        ApiService.ApiResponse<ApiService.OrderResponse> apiResponse = response.body();
                         
-                        Log.d(TAG, "Order placed successfully: " + orderResponse.getId());
-                        
-                        // Show success dialog
-                        showOrderSuccessDialog(orderResponse);
-                        
-                        // Clear cart
+                        if (apiResponse != null && apiResponse.isSuccess() && apiResponse.getData() != null) {
+                            ApiService.OrderResponse orderResponse = apiResponse.getData();
+                            
+                            Log.d(TAG, "Order placed successfully: " + orderResponse.getId());
+                            
+                            // Show success dialog
+                            showOrderSuccessDialog(orderResponse);
+                            
+                            // Clear cart
+                            cartManager.clearCart();
+                        } else {
+                            String errorMsg = apiResponse != null && apiResponse.getMessage() != null ? 
+                                    apiResponse.getMessage() : "Đặt món thất bại";
+                            Toast.makeText(CartActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error parsing response", e);
+                        Toast.makeText(CartActivity.this, 
+                                "Đặt món thành công nhưng không thể đọc thông tin đơn hàng", 
+                                Toast.LENGTH_LONG).show();
+                        // Clear cart anyway since order was successful
                         cartManager.clearCart();
-                    } else {
-                        String errorMsg = apiResponse.getMessage() != null ? 
-                                apiResponse.getMessage() : "Đặt món thất bại";
-                        Toast.makeText(CartActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                        finish();
                     }
                 } else {
-                    Toast.makeText(CartActivity.this, 
-                            "Lỗi server: " + response.code(), Toast.LENGTH_LONG).show();
+                    // Log error details
+                    Log.e(TAG, "Order failed with code: " + response.code());
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorBody = response.errorBody().string();
+                            Log.e(TAG, "Error body: " + errorBody);
+                            Toast.makeText(CartActivity.this, 
+                                    "Lỗi " + response.code() + ": " + errorBody, 
+                                    Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(CartActivity.this, 
+                                    "Lỗi server: " + response.code(), Toast.LENGTH_LONG).show();
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error reading error body", e);
+                        Toast.makeText(CartActivity.this, 
+                                "Lỗi server: " + response.code(), Toast.LENGTH_LONG).show();
+                    }
                 }
             }
 
@@ -273,12 +309,16 @@ public class CartActivity extends AppCompatActivity implements CartManager.CartC
     }
 
     private void showOrderSuccessDialog(ApiService.OrderResponse orderResponse) {
+        String orderId = orderResponse.getOrderNumber() != null ? 
+                orderResponse.getOrderNumber() : 
+                orderResponse.getId().substring(Math.max(0, orderResponse.getId().length() - 6));
+        
         String message = String.format(
-                "Đơn hàng #%s\n" +
+                "Đơn hàng: %s\n" +
                 "Trạng thái: %s\n" +
                 "Tổng tiền: %,.0f đ\n\n" +
                 "Món ăn đang được chuẩn bị!",
-                orderResponse.getId().substring(orderResponse.getId().length() - 6),
+                orderId,
                 getStatusText(orderResponse.getStatus()),
                 orderResponse.getTotalAmount()
         );

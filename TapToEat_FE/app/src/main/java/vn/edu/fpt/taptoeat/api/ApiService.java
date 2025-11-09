@@ -1,5 +1,7 @@
 package vn.edu.fpt.taptoeat.api;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
 import retrofit2.Call;
@@ -37,6 +39,10 @@ public interface ApiService {
     // UC-04: Place order
     @POST("orders")
     Call<ApiResponse<OrderResponse>> placeOrder(@Body OrderRequest request);
+    
+    // UC-05: Get session orders
+    @GET("sessions/{sessionId}/orders")
+    Call<ApiResponse<List<OrderResponse>>> getSessionOrders(@Path("sessionId") String sessionId);
 
     // Response wrapper classes
     class ApiResponse<T> {
@@ -114,15 +120,21 @@ public interface ApiService {
     // UC-04 Order Request/Response models
     class OrderRequest {
         private String sessionId;
+        private int tableNumber;
         private List<OrderItemRequest> items;
 
-        public OrderRequest(String sessionId, List<OrderItemRequest> items) {
+        public OrderRequest(String sessionId, int tableNumber, List<OrderItemRequest> items) {
             this.sessionId = sessionId;
+            this.tableNumber = tableNumber;
             this.items = items;
         }
 
         public String getSessionId() {
             return sessionId;
+        }
+
+        public int getTableNumber() {
+            return tableNumber;
         }
 
         public List<OrderItemRequest> getItems() {
@@ -155,12 +167,14 @@ public interface ApiService {
     }
     
     class OrderResponse {
+        @SerializedName("_id")
         private String _id;
-        private String sessionId;
+        
+        private Object sessionId;  // Change to Object since backend returns object
         private int tableNumber;
+        private String orderNumber;
         private String status;
         private double totalAmount;
-        private String createdAt;
         private List<OrderItemResponse> items;
 
         public String getId() {
@@ -168,11 +182,21 @@ public interface ApiService {
         }
 
         public String getSessionId() {
-            return sessionId;
+            // Handle sessionId as object, extract string if needed
+            if (sessionId instanceof String) {
+                return (String) sessionId;
+            } else if (sessionId != null) {
+                return sessionId.toString();
+            }
+            return null;
         }
 
         public int getTableNumber() {
             return tableNumber;
+        }
+
+        public String getOrderNumber() {
+            return orderNumber;
         }
 
         public String getStatus() {
@@ -184,7 +208,11 @@ public interface ApiService {
         }
 
         public String getCreatedAt() {
-            return createdAt;
+            // Return orderedAt from first item if available
+            if (items != null && !items.isEmpty() && items.get(0).getOrderedAt() != null) {
+                return items.get(0).getOrderedAt();
+            }
+            return null;
         }
 
         public List<OrderItemResponse> getItems() {
@@ -194,17 +222,19 @@ public interface ApiService {
     
     class OrderItemResponse {
         private String menuItemId;
-        private String name;
+        private String menuItemName;
         private int quantity;
         private double price;
-        private String notes;
+        private String note;
+        private String status;
+        private String orderedAt;
 
         public String getMenuItemId() {
             return menuItemId;
         }
 
         public String getName() {
-            return name;
+            return menuItemName;
         }
 
         public int getQuantity() {
@@ -216,7 +246,15 @@ public interface ApiService {
         }
 
         public String getNotes() {
-            return notes;
+            return note;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public String getOrderedAt() {
+            return orderedAt;
         }
     }
 }
