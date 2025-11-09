@@ -1,5 +1,6 @@
 package vn.edu.fpt.taptoeat;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +11,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import vn.edu.fpt.taptoeat.api.ApiService;
+import vn.edu.fpt.taptoeat.api.RetrofitClient;
 
 public class TableInputActivity extends AppCompatActivity {
 
@@ -74,35 +81,86 @@ public class TableInputActivity extends AppCompatActivity {
     }
 
     private void verifyTableAndStartSession(int tableNumber) {
-        // TODO: Replace this with actual API call
-        // Simulating API call with a delay
         btnStart.setEnabled(false);
         btnStart.setText(R.string.loading);
 
-        // Simulate network delay
-        btnStart.postDelayed(new Runnable() {
+        // Step 1: Verify table exists
+        ApiService apiService = RetrofitClient.getInstance().getApiService();
+        Call<ApiService.ApiResponse<ApiService.TableInfo>> verifyCall = 
+                apiService.getTableInfo(tableNumber);
+
+        verifyCall.enqueue(new Callback<ApiService.ApiResponse<ApiService.TableInfo>>() {
             @Override
-            public void run() {
-                // For now, accept any table number
-                // In real implementation, check if table exists in backend
-                onTableVerificationSuccess(tableNumber);
+            public void onResponse(@NonNull Call<ApiService.ApiResponse<ApiService.TableInfo>> call,
+                                   @NonNull Response<ApiService.ApiResponse<ApiService.TableInfo>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiService.ApiResponse<ApiService.TableInfo> apiResponse = response.body();
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        ApiService.TableInfo tableInfo = apiResponse.getData();
+                        
+                        // Check table status
+                        if ("available".equals(tableInfo.getStatus())) {
+                            // Step 2: Create session
+                            createSession(tableNumber);
+                        } else {
+                            onTableVerificationError("Bàn " + tableNumber + " đang được sử dụng");
+                        }
+                    } else {
+                        onTableVerificationError("Bàn không tồn tại");
+                    }
+                } else {
+                    onTableVerificationError("Không thể kết nối đến server");
+                }
             }
-        }, 1000);
+
+            @Override
+            public void onFailure(@NonNull Call<ApiService.ApiResponse<ApiService.TableInfo>> call,
+                                  @NonNull Throwable t) {
+                onTableVerificationError("Lỗi kết nối: " + t.getMessage());
+            }
+        });
     }
 
-    private void onTableVerificationSuccess(int tableNumber) {
+    private void createSession(int tableNumber) {
+        ApiService apiService = RetrofitClient.getInstance().getApiService();
+        ApiService.SessionRequest request = new ApiService.SessionRequest(tableNumber);
+        Call<ApiService.ApiResponse<ApiService.SessionInfo>> sessionCall = 
+                apiService.createSession(request);
+
+        sessionCall.enqueue(new Callback<ApiService.ApiResponse<ApiService.SessionInfo>>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiService.ApiResponse<ApiService.SessionInfo>> call,
+                                   @NonNull Response<ApiService.ApiResponse<ApiService.SessionInfo>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiService.ApiResponse<ApiService.SessionInfo> apiResponse = response.body();
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        ApiService.SessionInfo sessionInfo = apiResponse.getData();
+                        onTableVerificationSuccess(tableNumber, sessionInfo.getId());
+                    } else {
+                        onTableVerificationError("Không thể tạo phiên làm việc");
+                    }
+                } else {
+                    onTableVerificationError("Lỗi tạo phiên làm việc");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ApiService.ApiResponse<ApiService.SessionInfo>> call,
+                                  @NonNull Throwable t) {
+                onTableVerificationError("Lỗi: " + t.getMessage());
+            }
+        });
+    }
+
+    private void onTableVerificationSuccess(int tableNumber, String sessionId) {
         Toast.makeText(this, "Chào mừng đến bàn " + tableNumber, Toast.LENGTH_SHORT).show();
 
-        // TODO: Navigate to Menu Activity
-        // Intent intent = new Intent(TableInputActivity.this, MenuActivity.class);
-        // intent.putExtra("TABLE_NUMBER", tableNumber);
-        // intent.putExtra("SESSION_ID", sessionId); // Get from API response
-        // startActivity(intent);
-        // finish();
-
-        // For now, just reset the button
-        btnStart.setEnabled(true);
-        btnStart.setText(R.string.start_button);
+        // Navigate to Menu Activity
+        Intent intent = new Intent(TableInputActivity.this, MenuActivity.class);
+        intent.putExtra("TABLE_NUMBER", tableNumber);
+        intent.putExtra("SESSION_ID", sessionId);
+        startActivity(intent);
+        finish();
     }
 
     private void onTableVerificationError(String errorMessage) {

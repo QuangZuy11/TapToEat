@@ -1,15 +1,22 @@
 package vn.edu.fpt.taptoeat.api;
 
 public class ApiConfig {
-    // TODO: Update this with your actual backend URL
-    public static final String BASE_URL = "http://10.0.2.2:3000/api/"; // For Android Emulator
-    // public static final String BASE_URL = "http://localhost:3000/api/"; // For physical device, use your computer's IP
+    // Base URL - Update with your backend URL
+    public static final String BASE_URL = "http://10.0.2.2:9999/api/"; // For Android Emulator
+    // public static final String BASE_URL = "http://192.168.1.xxx:9999/api/"; // For physical device
     
-    // Endpoints
-    public static final String VERIFY_TABLE = "tables/verify";
-    public static final String GET_SESSION = "sessions/table/";
+    // UC-01: Table & Session
+    public static final String GET_TABLE = "tables/";
     public static final String CREATE_SESSION = "sessions";
-    public static final String GET_MENU = "menu";
+    public static final String GET_SESSION = "orders/session/";
+    
+    // UC-02: Menu
+    public static final String GET_CATEGORIES = "categories";
+    public static final String GET_CATEGORY_ITEMS = "categories/%s/items";
+    public static final String GET_MENU_ITEMS = "menu-items";
+    
+    // UC-04: Orders
     public static final String CREATE_ORDER = "orders";
     public static final String GET_ORDERS = "orders/session/";
 }
+

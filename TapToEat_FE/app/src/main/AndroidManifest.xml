@@ -33,6 +33,18 @@
             android:name=".TableInputActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+        
+        <!-- Menu Activity -->
+        <activity
+            android:name=".MenuActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        
+        <!-- API Test Activity (Debug) -->
+        <activity
+            android:name=".ApiTestActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
     </application>
 

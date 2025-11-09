@@ -13,12 +13,34 @@
     <string name="decoration">Decoration</string>
     <string name="powered_by">TapToEat - Quick Ordering System</string>
     
+    <!-- Menu Screen -->
+    <string name="menu_subtitle">Thực đơn</string>
+    <string name="menu_item_image">Menu Item Image</string>
+    <string name="category_all">Tất cả</string>
+    <string name="popular_tag">Phổ biến</string>
+    <string name="new_tag">Mới</string>
+    <string name="unavailable">Hết món</string>
+    <string name="preparation_time">%d phút</string>
+    <string name="search_icon">Search Icon</string>
+    <string name="price_icon">Price Icon</string>
+    <string name="search_hint">Tên món ăn</string>
+    <string name="price_from_hint">0</string>
+    <string name="price_to_hint">1.000.000</string>
+    <string name="search_button">Tìm</string>
+    <string name="clear_button">xóa</string>
+    <string name="price_to">đến</string>
+    <string name="cart_icon">Cart Icon</string>
+    <string name="add_to_cart">Thêm</string>
+    
     <!-- Error Messages -->
     <string name="error_empty_table">Vui lòng nhập số bàn</string>
     <string name="error_invalid_table">Số bàn không hợp lệ</string>
     <string name="error_table_not_found">Không tìm thấy bàn này</string>
     <string name="error_network">Lỗi kết nối. Vui lòng thử lại</string>
+    <string name="error_load_menu">Không thể tải menu</string>
+    <string name="error_load_categories">Không thể tải danh mục</string>
     
     <!-- Loading -->
     <string name="loading">Đang xử lý...</string>
+    <string name="loading_menu">Đang tải thực đơn...</string>
 </resources>
