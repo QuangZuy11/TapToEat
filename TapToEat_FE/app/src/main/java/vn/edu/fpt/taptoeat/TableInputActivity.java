@@ -23,6 +23,7 @@ public class TableInputActivity extends AppCompatActivity {
     private TextInputLayout tilTableNumber;
     private TextInputEditText etTableNumber;
     private Button btnStart;
+    private Button btnChef;
     private TextView tvError;
 
     @Override
@@ -33,11 +34,20 @@ public class TableInputActivity extends AppCompatActivity {
         // Initialize views
         initViews();
 
-        // Set up button click listener
+        // Set up button click listeners
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 handleStartButton();
+            }
+        });
+        
+        btnChef.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to Chef Dashboard
+                Intent intent = new Intent(TableInputActivity.this, ChefDashboardActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -46,6 +56,7 @@ public class TableInputActivity extends AppCompatActivity {
         tilTableNumber = findViewById(R.id.tilTableNumber);
         etTableNumber = findViewById(R.id.etTableNumber);
         btnStart = findViewById(R.id.btnStart);
+        btnChef = findViewById(R.id.btnChef);
         tvError = findViewById(R.id.tvError);
     }
 

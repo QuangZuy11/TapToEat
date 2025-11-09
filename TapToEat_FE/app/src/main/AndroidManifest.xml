@@ -52,6 +52,12 @@
             android:exported="false"
             android:screenOrientation="portrait" />
         
+        <!-- Chef Dashboard Activity -->
+        <activity
+            android:name=".ChefDashboardActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        
         <!-- API Test Activity (Debug) -->
         <activity
             android:name=".ApiTestActivity"

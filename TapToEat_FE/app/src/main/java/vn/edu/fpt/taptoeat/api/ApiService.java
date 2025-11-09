@@ -7,8 +7,11 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 import vn.edu.fpt.taptoeat.models.Category;
 import vn.edu.fpt.taptoeat.models.CategoryItemsResponse;
 import vn.edu.fpt.taptoeat.models.MenuItem;
@@ -43,6 +46,38 @@ public interface ApiService {
     // UC-05: Get session orders
     @GET("sessions/{sessionId}/orders")
     Call<ApiResponse<List<OrderResponse>>> getSessionOrders(@Path("sessionId") String sessionId);
+    
+    // UC-06: Get all orders for chef
+    @GET("orders")
+    Call<ApiResponse<List<OrderResponse>>> getAllOrders();
+    
+    // UC-06: Get orders for chef with status filter
+    @GET("chef/orders")
+    Call<ChefOrdersResponse> getChefOrders(@Query("status") List<String> statuses);
+    
+    // UC-06: Get chef dashboard stats
+    @GET("chef/dashboard")
+    Call<ApiResponse<ChefDashboardResponse>> getChefDashboard();
+    
+    // UC-07 & UC-08: Update order status (legacy)
+    @PUT("orders/{orderId}/status")
+    Call<ApiResponse<OrderResponse>> updateOrderStatus(@Path("orderId") String orderId, @Body StatusUpdateRequest request);
+    
+    // UC-07: Start preparing order item
+    @PATCH("chef/orders/{orderId}/items/{itemIndex}/start")
+    Call<ApiResponse<OrderResponse>> startOrderItem(@Path("orderId") String orderId, @Path("itemIndex") int itemIndex, @Body StatusUpdateRequest request);
+    
+    // UC-07: Start preparing entire order
+    @PATCH("chef/orders/{orderId}/start")
+    Call<ApiResponse<OrderResponse>> startOrder(@Path("orderId") String orderId);
+    
+    // UC-08: Complete order item
+    @PATCH("chef/orders/{orderId}/items/{itemIndex}/complete")
+    Call<ApiResponse<OrderResponse>> completeOrderItem(@Path("orderId") String orderId, @Path("itemIndex") int itemIndex, @Body StatusUpdateRequest request);
+    
+    // UC-09: Update menu item availability
+    @PATCH("chef/menu-items/{id}/availability")
+    Call<ApiResponse<MenuItem>> updateMenuItemAvailability(@Path("id") String menuItemId, @Body AvailabilityRequest request);
 
     // Response wrapper classes
     class ApiResponse<T> {
@@ -163,6 +198,98 @@ public interface ApiService {
 
         public String getNotes() {
             return notes;
+        }
+    }
+    
+    // UC-07 & UC-08: Status update request
+    class StatusUpdateRequest {
+        private String status;
+
+        public StatusUpdateRequest(String status) {
+            this.status = status;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+    }
+    
+    // UC-06: Chef orders response
+    class ChefOrdersResponse {
+        private List<OrderResponse> data;
+        private ChefStats stats;
+
+        public List<OrderResponse> getData() {
+            return data;
+        }
+
+        public ChefStats getStats() {
+            return stats;
+        }
+    }
+    
+    // UC-06: Chef dashboard response
+    class ChefDashboardResponse {
+        private ChefCurrentOrders currentOrders;
+        private List<OrderResponse> urgentOrders;
+        private ChefTodayStats todayStats;
+
+        public ChefCurrentOrders getCurrentOrders() {
+            return currentOrders;
+        }
+
+        public List<OrderResponse> getUrgentOrders() {
+            return urgentOrders;
+        }
+
+        public ChefTodayStats getTodayStats() {
+            return todayStats;
+        }
+    }
+    
+    // UC-06: Chef stats
+    class ChefStats {
+        private int total;
+        private int pending;
+        private int preparing;
+        private int ready;
+
+        public int getTotal() { return total; }
+        public int getPending() { return pending; }
+        public int getPreparing() { return preparing; }
+        public int getReady() { return ready; }
+    }
+    
+    class ChefCurrentOrders {
+        private int pending;
+        private int preparing;
+        private int ready;
+        private int total;
+
+        public int getPending() { return pending; }
+        public int getPreparing() { return preparing; }
+        public int getReady() { return ready; }
+        public int getTotal() { return total; }
+    }
+    
+    class ChefTodayStats {
+        private int totalOrders;
+        private int completed;
+
+        public int getTotalOrders() { return totalOrders; }
+        public int getCompleted() { return completed; }
+    }
+    
+    // UC-09: Availability update request
+    class AvailabilityRequest {
+        private boolean isAvailable;
+
+        public AvailabilityRequest(boolean isAvailable) {
+            this.isAvailable = isAvailable;
+        }
+
+        public boolean isAvailable() {
+            return isAvailable;
         }
     }
     

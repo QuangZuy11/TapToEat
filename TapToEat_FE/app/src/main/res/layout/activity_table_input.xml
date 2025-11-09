@@ -151,6 +151,26 @@
                 android:layout_marginStart="32dp"
                 android:layout_marginEnd="32dp" />
 
+            <!-- Chef Mode Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnChef"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:text="Chế độ Đầu bếp"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/orange"
+                app:cornerRadius="12dp"
+                app:elevation="8dp"
+                app:icon="@drawable/ic_chef"
+                app:iconGravity="textStart"
+                app:iconPadding="12dp"
+                app:iconTint="@color/white"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginTop="16dp" />
+
             <!-- Error Message -->
             <TextView
                 android:id="@+id/tvError"
