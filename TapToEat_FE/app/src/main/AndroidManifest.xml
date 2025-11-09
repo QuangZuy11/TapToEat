@@ -40,6 +40,12 @@
             android:exported="false"
             android:screenOrientation="portrait" />
         
+        <!-- Cart Activity -->
+        <activity
+            android:name=".CartActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        
         <!-- API Test Activity (Debug) -->
         <activity
             android:name=".ApiTestActivity"

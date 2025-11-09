@@ -6,6 +6,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -19,6 +20,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -33,15 +35,18 @@ import vn.edu.fpt.taptoeat.api.ApiService;
 import vn.edu.fpt.taptoeat.api.RetrofitClient;
 import vn.edu.fpt.taptoeat.fragments.MenuItemsFragment;
 import vn.edu.fpt.taptoeat.models.Category;
+import vn.edu.fpt.taptoeat.utils.CartManager;
 
-public class MenuActivity extends AppCompatActivity {
+public class MenuActivity extends AppCompatActivity implements CartManager.CartChangeListener {
 
     private Toolbar toolbar;
     private TextView tvTableNumber;
+    private TextView tvCartBadge;
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
     private ProgressBar progressBar;
     private ImageView ivCart;
+    private View cartBadgeLayout;
     
     // Search and Filter
     private EditText etSearch;
@@ -74,11 +79,23 @@ public class MenuActivity extends AppCompatActivity {
         setupToolbar();
         setupSearchAndFilter();
         loadCategories();
+        
+        // Register cart change listener
+        CartManager.getInstance().addCartChangeListener(this);
+        updateCartBadge();
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Unregister cart change listener
+        CartManager.getInstance().removeCartChangeListener(this);
     }
 
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
         tvTableNumber = findViewById(R.id.tvTableNumber);
+        tvCartBadge = findViewById(R.id.tvCartBadge);
         tabLayout = findViewById(R.id.tabLayout);
         viewPager = findViewById(R.id.viewPager);
         progressBar = findViewById(R.id.progressBar);
@@ -93,10 +110,12 @@ public class MenuActivity extends AppCompatActivity {
 
         tvTableNumber.setText("Bàn " + tableNumber);
         
-        // Cart icon click
+        // Cart icon click - navigate to cart activity
         ivCart.setOnClickListener(v -> {
-            // TODO: Navigate to cart activity
-            Toast.makeText(this, "Giỏ hàng", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MenuActivity.this, CartActivity.class);
+            intent.putExtra("TABLE_NUMBER", tableNumber);
+            intent.putExtra("SESSION_ID", sessionId);
+            startActivity(intent);
         });
     }
     
@@ -228,5 +247,24 @@ public class MenuActivity extends AppCompatActivity {
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             tab.setText(categories.get(position).getName());
         }).attach();
+    }
+    
+    // Update cart badge count
+    public void updateCartBadge() {
+        runOnUiThread(() -> {
+            int count = CartManager.getInstance().getTotalItemsCount();
+            if (count > 0) {
+                tvCartBadge.setVisibility(View.VISIBLE);
+                tvCartBadge.setText(count > 99 ? "99+" : String.valueOf(count));
+            } else {
+                tvCartBadge.setVisibility(View.GONE);
+            }
+        });
+    }
+    
+    // Implement CartChangeListener
+    @Override
+    public void onCartChanged() {
+        updateCartBadge();
     }
 }

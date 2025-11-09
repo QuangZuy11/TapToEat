@@ -33,6 +33,10 @@ public interface ApiService {
     // UC-02: Get all menu items (alternative endpoint)
     @GET("menu-items")
     Call<ApiResponse<List<MenuItem>>> getAllMenuItems();
+    
+    // UC-04: Place order
+    @POST("orders")
+    Call<ApiResponse<OrderResponse>> placeOrder(@Body OrderRequest request);
 
     // Response wrapper classes
     class ApiResponse<T> {
@@ -104,6 +108,115 @@ public interface ApiService {
 
         public String getCreatedAt() {
             return createdAt;
+        }
+    }
+    
+    // UC-04 Order Request/Response models
+    class OrderRequest {
+        private String sessionId;
+        private List<OrderItemRequest> items;
+
+        public OrderRequest(String sessionId, List<OrderItemRequest> items) {
+            this.sessionId = sessionId;
+            this.items = items;
+        }
+
+        public String getSessionId() {
+            return sessionId;
+        }
+
+        public List<OrderItemRequest> getItems() {
+            return items;
+        }
+    }
+    
+    class OrderItemRequest {
+        private String menuItemId;
+        private int quantity;
+        private String notes;
+
+        public OrderItemRequest(String menuItemId, int quantity, String notes) {
+            this.menuItemId = menuItemId;
+            this.quantity = quantity;
+            this.notes = notes;
+        }
+
+        public String getMenuItemId() {
+            return menuItemId;
+        }
+
+        public int getQuantity() {
+            return quantity;
+        }
+
+        public String getNotes() {
+            return notes;
+        }
+    }
+    
+    class OrderResponse {
+        private String _id;
+        private String sessionId;
+        private int tableNumber;
+        private String status;
+        private double totalAmount;
+        private String createdAt;
+        private List<OrderItemResponse> items;
+
+        public String getId() {
+            return _id;
+        }
+
+        public String getSessionId() {
+            return sessionId;
+        }
+
+        public int getTableNumber() {
+            return tableNumber;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public double getTotalAmount() {
+            return totalAmount;
+        }
+
+        public String getCreatedAt() {
+            return createdAt;
+        }
+
+        public List<OrderItemResponse> getItems() {
+            return items;
+        }
+    }
+    
+    class OrderItemResponse {
+        private String menuItemId;
+        private String name;
+        private int quantity;
+        private double price;
+        private String notes;
+
+        public String getMenuItemId() {
+            return menuItemId;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getQuantity() {
+            return quantity;
+        }
+
+        public double getPrice() {
+            return price;
+        }
+
+        public String getNotes() {
+            return notes;
         }
     }
 }

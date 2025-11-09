@@ -12,6 +12,7 @@
     <!-- Accent Colors -->
     <color name="accent">#FF6F00</color>           <!-- Orange accent -->
     <color name="accent_light">#FFA726</color>
+    <color name="orange">#FF6F00</color>           <!-- Orange (alias) -->
     
     <!-- Background -->
     <color name="background_light">#F1F8E9</color> <!-- Very light green -->
@@ -24,6 +25,10 @@
     <color name="text_secondary">#558B2F</color>   <!-- Medium green -->
     <color name="text_hint">#9E9E9E</color>
     <color name="text_on_primary">#FFFFFF</color>  <!-- White text on green -->
+    <color name="green_dark">#1B5E20</color>       <!-- Alias for primary -->
+    <color name="gray_dark">#616161</color>
+    <color name="gray">#9E9E9E</color>
+    <color name="gray_light">#E0E0E0</color>
     
     <!-- Status Colors -->
     <color name="success">#4CAF50</color>

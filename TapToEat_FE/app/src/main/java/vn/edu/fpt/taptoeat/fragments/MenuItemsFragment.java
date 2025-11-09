@@ -20,9 +20,11 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import vn.edu.fpt.taptoeat.R;
+import vn.edu.fpt.taptoeat.MenuActivity;
 import vn.edu.fpt.taptoeat.adapters.MenuItemAdapter;
 import vn.edu.fpt.taptoeat.api.ApiService;
 import vn.edu.fpt.taptoeat.api.RetrofitClient;
+import vn.edu.fpt.taptoeat.dialogs.AddToCartDialog;
 import vn.edu.fpt.taptoeat.models.CategoryItemsResponse;
 import vn.edu.fpt.taptoeat.models.MenuItem;
 
@@ -85,8 +87,8 @@ public class MenuItemsFragment extends Fragment {
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
         adapter = new MenuItemAdapter(new ArrayList<>(), menuItem -> {
-            // TODO: Handle item click - show detail or add to cart
-            // Toast.makeText(getContext(), "Clicked: " + menuItem.getName(), Toast.LENGTH_SHORT).show();
+            // Open add to cart dialog
+            showAddToCartDialog(menuItem);
         });
         recyclerView.setAdapter(adapter);
     }
@@ -189,5 +191,22 @@ public class MenuItemsFragment extends Fragment {
         if (getContext() != null) {
             Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void showAddToCartDialog(MenuItem menuItem) {
+        if (getContext() == null || !isAdded()) {
+            return;
+        }
+        
+        AddToCartDialog dialog = new AddToCartDialog(getContext(), menuItem, () -> {
+            // Show success message
+            Toast.makeText(getContext(), "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+            
+            // Update cart badge in parent activity
+            if (getActivity() instanceof MenuActivity) {
+                ((MenuActivity) getActivity()).updateCartBadge();
+            }
+        });
+        dialog.show();
     }
 }
