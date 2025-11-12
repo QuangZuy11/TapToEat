@@ -83,6 +83,10 @@ public interface ApiService {
     @POST("sessions/{sessionId}/payment")
     Call<ApiResponse<PaymentResponse>> completeSessionPayment(@Path("sessionId") String sessionId, @Body PaymentRequest request);
 
+    // AI Recommendations: Get weather-based menu recommendations
+    @GET("ai-recommendations/weather")
+    Call<ApiResponse<AIRecommendationResponse>> getAIRecommendations();
+
     // Response wrapper classes
     class ApiResponse<T> {
         private boolean success;
@@ -437,6 +441,76 @@ public interface ApiService {
 
         public String getEndTime() {
             return endTime;
+        }
+    }
+
+    // AI Recommendation Response Classes
+    class AIRecommendationResponse {
+        private WeatherInfo weather;
+        private java.util.List<RecommendationItem> recommendations;
+        private String timestamp;
+
+        public WeatherInfo getWeather() {
+            return weather;
+        }
+
+        public java.util.List<RecommendationItem> getRecommendations() {
+            return recommendations;
+        }
+
+        public String getTimestamp() {
+            return timestamp;
+        }
+    }
+
+    class WeatherInfo {
+        private int temperature;
+        private int humidity;
+        private String condition;
+        private String description;
+        private String icon;
+        private int feelsLike;
+
+        public int getTemperature() {
+            return temperature;
+        }
+
+        public int getHumidity() {
+            return humidity;
+        }
+
+        public String getCondition() {
+            return condition;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public String getIcon() {
+            return icon;
+        }
+
+        public int getFeelsLike() {
+            return feelsLike;
+        }
+    }
+
+    class RecommendationItem {
+        private MenuItem menuItem;
+        private String reason;
+        private int matchScore;
+
+        public MenuItem getMenuItem() {
+            return menuItem;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+
+        public int getMatchScore() {
+            return matchScore;
         }
     }
 }

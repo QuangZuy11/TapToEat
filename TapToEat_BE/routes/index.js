@@ -7,6 +7,7 @@ const menuItemsRoute = require('./customer/menuItems');
 const tablesRoute = require('./customer/tables');
 const sessionsRoute = require('./customer/sessions');
 const ordersRoute = require('./customer/orders');
+const aiRecommendationsRoute = require('./customer/aiRecommendations');
 
 // Import chef routes
 const chefRoute = require('./chef');
@@ -22,7 +23,8 @@ router.get('/', (req, res) => {
                 menuItems: '/api/menu-items',
                 tables: '/api/tables',
                 sessions: '/api/sessions',
-                orders: '/api/orders'
+                orders: '/api/orders',
+                aiRecommendations: '/api/ai-recommendations'
             },
             chef: {
                 orders: '/api/chef/orders',
@@ -38,6 +40,7 @@ router.use('/menu-items', menuItemsRoute);
 router.use('/tables', tablesRoute);
 router.use('/sessions', sessionsRoute);
 router.use('/orders', ordersRoute);
+router.use('/ai-recommendations', aiRecommendationsRoute);
 
 // Chef routes
 router.use('/chef', chefRoute);

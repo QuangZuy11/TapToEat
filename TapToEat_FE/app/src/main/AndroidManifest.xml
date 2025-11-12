@@ -58,6 +58,12 @@
             android:exported="false"
             android:screenOrientation="portrait" />
 
+        <!-- AI Recommendations Activity -->
+        <activity
+            android:name=".AiRecommendationsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
     </application>
 
 </manifest>

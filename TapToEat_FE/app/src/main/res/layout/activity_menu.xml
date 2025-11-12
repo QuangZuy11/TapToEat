@@ -236,6 +236,29 @@
 
             </LinearLayout>
 
+            <!-- AI Suggestion Button (placed under filters, left side) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp">
+
+                <Button
+                    android:id="@+id/btnAiRecommend"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Gợi ý AI"
+                    android:textSize="14sp"
+                    android:backgroundTint="@color/primary"
+                    android:textColor="@color/white" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+            </LinearLayout>
+
             <!-- Action Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"

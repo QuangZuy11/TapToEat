@@ -54,6 +54,7 @@ public class MenuActivity extends AppCompatActivity implements CartManager.CartC
     private EditText etPriceTo;
     private Button btnSearch;
     private Button btnClearFilter;
+    private Button btnAiRecommend;
 
     private MenuPagerAdapter pagerAdapter;
     private List<Category> categories;
@@ -109,6 +110,7 @@ public class MenuActivity extends AppCompatActivity implements CartManager.CartC
         etPriceTo = findViewById(R.id.etPriceTo);
         btnSearch = findViewById(R.id.btnSearch);
         btnClearFilter = findViewById(R.id.btnClearFilter);
+    btnAiRecommend = findViewById(R.id.btnAiRecommend);
 
         tvTableNumber.setText("Bàn " + tableNumber);
         
@@ -137,6 +139,14 @@ public class MenuActivity extends AppCompatActivity implements CartManager.CartC
             intent.putExtra("SESSION_ID", sessionId);
             startActivity(intent);
         });
+
+        // AI Recommendation button - open AI suggestions activity
+        if (btnAiRecommend != null) {
+            btnAiRecommend.setOnClickListener(v -> {
+                Intent intent = new Intent(MenuActivity.this, AiRecommendationsActivity.class);
+                startActivity(intent);
+            });
+        }
     }
     
     private void setupSearchAndFilter() {
