@@ -328,7 +328,8 @@ public class OrderStatusActivity extends AppCompatActivity {
                 .setTitle("💳 Thanh Toán")
                 .setMessage(billMessage)
                 .setPositiveButton("Đồng Ý", (dialog, which) -> {
-                    procesPayment();
+                    Log.d(TAG, "User confirmed payment");
+                    processPayment();
                 })
                 .setNegativeButton("Hủy", null)
                 .show();
@@ -337,7 +338,16 @@ public class OrderStatusActivity extends AppCompatActivity {
     /**
      * Process payment and reset session
      */
-    private void procesPayment() {
+    private void processPayment() {
+        Log.d(TAG, "=== PROCESS PAYMENT START ===");
+        Log.d(TAG, "SessionId: " + sessionId);
+        
+        if (sessionId == null || sessionId.isEmpty()) {
+            Log.e(TAG, "SessionId is null or empty!");
+            Toast.makeText(this, "Lỗi: Không tìm thấy phiên làm việc", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
         // Show loading dialog
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Đang xử lý thanh toán...");
@@ -346,46 +356,69 @@ public class OrderStatusActivity extends AppCompatActivity {
         
         // Call API to complete session payment
         ApiService.PaymentRequest request = new ApiService.PaymentRequest("cash");
+        Log.d(TAG, "Calling completeSessionPayment API with sessionId: " + sessionId);
         
         apiService.completeSessionPayment(sessionId, request).enqueue(new Callback<ApiResponse<ApiService.PaymentResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<ApiService.PaymentResponse>> call, 
                                  Response<ApiResponse<ApiService.PaymentResponse>> response) {
                 progressDialog.dismiss();
+                Log.d(TAG, "Payment API response code: " + response.code());
                 
-                if (response.isSuccessful() && response.body() != null) {
-                    ApiResponse<ApiService.PaymentResponse> apiResponse = response.body();
-                    
-                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
-                        ApiService.PaymentResponse paymentData = apiResponse.getData();
+                try {
+                    if (response.isSuccessful() && response.body() != null) {
+                        ApiResponse<ApiService.PaymentResponse> apiResponse = response.body();
+                        Log.d(TAG, "API response success: " + apiResponse.isSuccess());
+                        Log.d(TAG, "API response message: " + apiResponse.getMessage());
                         
-                        // Show success message
-                        Toast.makeText(OrderStatusActivity.this, 
-                            "Nhân viên đang mang bill đến cho bạn 👨‍💼", Toast.LENGTH_LONG).show();
-                        
-                        // Navigate back to table input screen
-                        Intent intent = new Intent(OrderStatusActivity.this, TableInputActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                        finish();
+                        if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                            ApiService.PaymentResponse paymentData = apiResponse.getData();
+                            Log.d(TAG, "Payment successful! Total: " + paymentData.getTotalAmount());
+                            
+                            // Show success message
+                            Toast.makeText(OrderStatusActivity.this, 
+                                "✅ Nhân viên đang ra quý khách vui lòng chờ!", Toast.LENGTH_LONG).show();
+                            
+                            // Navigate back to table input screen
+                            Intent intent = new Intent(OrderStatusActivity.this, TableInputActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Log.e(TAG, "Payment failed: " + apiResponse.getMessage());
+                            Toast.makeText(OrderStatusActivity.this, 
+                                "Lỗi: " + apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
                     } else {
+                        Log.e(TAG, "Response not successful: " + response.code());
+                        try {
+                            if (response.errorBody() != null) {
+                                String errorBody = response.errorBody().string();
+                                Log.e(TAG, "Error body: " + errorBody);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error reading error body", e);
+                        }
                         Toast.makeText(OrderStatusActivity.this, 
-                            "Lỗi: " + apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                            "Không thể thanh toán (Lỗi: " + response.code() + ")", Toast.LENGTH_SHORT).show();
                     }
-                } else {
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception processing payment response", e);
                     Toast.makeText(OrderStatusActivity.this, 
-                        "Không thể thanh toán. Vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+                        "Lỗi xử lý phản hồi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<ApiService.PaymentResponse>> call, Throwable t) {
                 progressDialog.dismiss();
-                Log.e(TAG, "Payment failed", t);
+                Log.e(TAG, "Payment API call failed", t);
                 Toast.makeText(OrderStatusActivity.this, 
                     "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+        
+        Log.d(TAG, "=== PROCESS PAYMENT END ===");
     }
 
     @Override
