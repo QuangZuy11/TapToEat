@@ -46,6 +46,15 @@ public class AiRecommendationsActivity extends AppCompatActivity {
         adapter = new RecommendationsAdapter(new ArrayList<>());
         rvRecommendations.setAdapter(adapter);
 
+        // Handle add to cart action from recommendations
+        adapter.setOnAddToCartListener(menuItem -> {
+            // Add 1 quantity to cart
+            vn.edu.fpt.taptoeat.utils.CartManager.getInstance().addItem(menuItem, 1, "");
+            // Notify user
+            Toast.makeText(AiRecommendationsActivity.this, "Đã thêm vào giỏ: " + menuItem.getName(), Toast.LENGTH_SHORT).show();
+            // Update badge in MenuActivity via CartManager listener
+        });
+
         loadRecommendations();
     }
 

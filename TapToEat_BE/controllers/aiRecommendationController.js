@@ -214,26 +214,19 @@ async function getGeminiRecommendations(prompt, menuItems) {
             .filter(rec => rec.itemIndex > 0 && rec.itemIndex <= menuItems.length)
             .map(rec => {
                 const menuItem = menuItems[rec.itemIndex - 1];
-                // convert mongoose doc to plain object
-                const mi = menuItem && typeof menuItem.toObject === 'function' ? menuItem.toObject() : menuItem;
                 return {
                     menuItem: {
-                        _id: mi._id,
-                        name: mi.name,
-                        description: mi.description,
-                        price: mi.price,
-                        imageUrl: mi.imageUrl || mi.image || (mi.category && mi.category.imageUrl) || null,
-                        category: mi.category
+                        _id: menuItem._id,
+                        name: menuItem.name,
+                        description: menuItem.description,
+                        price: menuItem.price,
+                        imageUrl: menuItem.imageUrl,
+                        category: menuItem.category
                     },
                     reason: rec.reason,
                     matchScore: rec.matchScore
                 };
             });
-
-        // Debug: log first mapped recommendation to verify imageUrl
-        if (recommendations && recommendations.length > 0) {
-            console.log('Mapped recommendation sample:', JSON.stringify(recommendations[0], null, 2));
-        }
 
         return recommendations;
 
@@ -246,7 +239,7 @@ async function getGeminiRecommendations(prompt, menuItems) {
                 name: item.name,
                 description: item.description,
                 price: item.price,
-                imageUrl: item.imageUrl || item.image,
+                imageUrl: item.imageUrl,
                 category: item.category
             },
             reason: 'Món ăn phổ biến được nhiều người yêu thích',

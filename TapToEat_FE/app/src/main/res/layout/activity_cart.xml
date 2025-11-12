@@ -154,7 +154,7 @@
             android:id="@+id/btnPlaceOrder"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:text="Đặt Món"
+            android:text="Gọi Món"
             android:textSize="18sp"
             android:textStyle="bold"
             app:cornerRadius="8dp"
