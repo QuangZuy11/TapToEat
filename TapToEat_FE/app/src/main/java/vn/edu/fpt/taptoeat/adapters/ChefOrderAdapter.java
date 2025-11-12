@@ -87,7 +87,7 @@ public class ChefOrderAdapter extends RecyclerView.Adapter<ChefOrderAdapter.View
             tvOrderInfo = itemView.findViewById(R.id.tvOrderInfo);
             tvOrderTime = itemView.findViewById(R.id.tvOrderTime);
             tvTableNumber = itemView.findViewById(R.id.tvTableNumber);
-            tvWaitingTime = itemView.findViewById(R.id.tvWaitingTime);
+//            tvWaitingTime = itemView.findViewById(R.id.tvWaitingTime);
             recyclerViewItems = itemView.findViewById(R.id.recyclerViewItems);
             btnAction = itemView.findViewById(R.id.btnAction);
 
@@ -111,16 +111,16 @@ public class ChefOrderAdapter extends RecyclerView.Adapter<ChefOrderAdapter.View
             tvOrderTime.setText(timeStr);
 
             // Waiting time
-            long waitingMinutes = calculateWaitingTime(order.getCreatedAt());
-            tvWaitingTime.setText(waitingMinutes + " phút");
+            // long waitingMinutes = calculateWaitingTime(order.getCreatedAt());
+            // tvWaitingTime.setText(waitingMinutes + " phút");
             
             // Highlight if waiting too long (> 15 minutes)
-            if (waitingMinutes > 15) {
-                cardOrder.setStrokeColor(Color.parseColor("#F44336")); // Red
-                cardOrder.setStrokeWidth(4);
-            } else {
-                cardOrder.setStrokeWidth(0);
-            }
+//            if (waitingMinutes > 15) {
+//                cardOrder.setStrokeColor(Color.parseColor("#F44336")); // Red
+//                cardOrder.setStrokeWidth(4);
+//            } else {
+//                cardOrder.setStrokeWidth(0);
+//            }
 
             // Setup items RecyclerView with item action listener
             ChefOrderItemAdapter itemAdapter = new ChefOrderItemAdapter(order.getItems(), 

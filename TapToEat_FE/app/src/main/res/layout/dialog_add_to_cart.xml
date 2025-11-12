@@ -71,17 +71,20 @@
         android:gravity="center_vertical"
         android:layout_marginBottom="16dp">
 
-        <!-- Decrease Button -->
+        <!-- Decrease Button (icon) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDecrease"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:text="-"
-            android:textSize="20sp"
+            android:text=""
             app:cornerRadius="24dp"
-            app:strokeColor="@color/green_dark"
-            app:strokeWidth="1dp"
-            style="@style/Widget.Material3.Button.OutlinedButton"/>
+            android:backgroundTint="@color/green_dark"
+            android:padding="0dp"
+            style="@style/Widget.Material3.Button"
+            app:icon="@drawable/ic_remove"
+            app:iconTint="@color/white"
+            app:iconSize="20dp"
+            app:iconGravity="textStart" />
 
         <!-- Quantity Display -->
         <TextView
@@ -96,17 +99,20 @@
             android:gravity="center"
             android:padding="12dp"/>
 
-        <!-- Increase Button -->
+        <!-- Increase Button (icon) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnIncrease"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:text="+"
-            android:textSize="20sp"
+            android:text=""
             app:cornerRadius="24dp"
-            app:strokeColor="@color/green_dark"
-            app:strokeWidth="1dp"
-            style="@style/Widget.Material3.Button.OutlinedButton"/>
+            android:backgroundTint="@color/green_dark"
+            android:padding="0dp"
+            style="@style/Widget.Material3.Button"
+            app:icon="@drawable/ic_add"
+            app:iconTint="@color/white"
+            app:iconSize="20dp"
+            app:iconGravity="textEnd" />
     </LinearLayout>
 
     <!-- Notes Section -->

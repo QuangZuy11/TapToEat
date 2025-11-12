@@ -92,8 +92,8 @@
                         android:layout_height="28dp"
                         android:src="@drawable/ic_remove"
                         android:padding="6dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        app:tint="@color/green_dark" />
+                        android:background="@drawable/quantity_button_background"
+                        app:tint="@color/white" />
 
                     <!-- Quantity -->
                     <TextView
@@ -113,8 +113,8 @@
                         android:layout_height="28dp"
                         android:src="@drawable/ic_add"
                         android:padding="6dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        app:tint="@color/green_dark" />
+                        android:background="@drawable/quantity_button_background"
+                        app:tint="@color/white" />
                 </LinearLayout>
 
                 <!-- Spacer -->
