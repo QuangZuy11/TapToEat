@@ -20,7 +20,7 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.View
     private List<OrderItemResponse> items;
 
     public OrderItemAdapter(List<OrderItemResponse> items) {
-        this.items = items;
+        this.items = items != null ? items : new java.util.ArrayList<>();
     }
 
     @NonNull
@@ -39,11 +39,11 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.View
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return items != null ? items.size() : 0;
     }
 
     public void updateItems(List<OrderItemResponse> newItems) {
-        this.items = newItems;
+        this.items = newItems != null ? newItems : new java.util.ArrayList<>();
         notifyDataSetChanged();
     }
 

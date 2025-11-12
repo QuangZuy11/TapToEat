@@ -8,4 +8,7 @@ router.post('/', tableController.createOrGetSession);
 // Lấy chi tiết session
 router.get('/:sessionId', tableController.getSessionById);
 
+// UC-10: Thanh toán và giải phóng session
+router.post('/:sessionId/payment', tableController.completeSessionAndPayment);
+
 module.exports = router;

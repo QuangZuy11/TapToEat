@@ -101,6 +101,7 @@ public class MenuActivity extends AppCompatActivity implements CartManager.CartC
         progressBar = findViewById(R.id.progressBar);
         ivCart = findViewById(R.id.ivCart);
         ImageView ivOrderStatus = findViewById(R.id.ivOrderStatus);
+        ImageView ivHome = findViewById(R.id.ivHome);
         
         // Search and Filter views
         etSearch = findViewById(R.id.etSearch);
@@ -110,6 +111,16 @@ public class MenuActivity extends AppCompatActivity implements CartManager.CartC
         btnClearFilter = findViewById(R.id.btnClearFilter);
 
         tvTableNumber.setText("Bàn " + tableNumber);
+        
+        // Home icon click - navigate back to table input
+        if (ivHome != null) {
+            ivHome.setOnClickListener(v -> {
+                Intent intent = new Intent(MenuActivity.this, TableInputActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
+            });
+        }
         
         // Order status icon click - navigate to order status activity
         ivOrderStatus.setOnClickListener(v -> {

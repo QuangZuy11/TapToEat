@@ -109,12 +109,13 @@ public class TableInputActivity extends AppCompatActivity {
                     if (apiResponse.isSuccess() && apiResponse.getData() != null) {
                         ApiService.TableInfo tableInfo = apiResponse.getData();
                         
-                        // Check table status
-                        if ("available".equals(tableInfo.getStatus())) {
-                            // Step 2: Create session
+                        // Check table status - allow both available and occupied
+                        // If occupied, customer can view order status and existing session
+                        if ("available".equals(tableInfo.getStatus()) || "occupied".equals(tableInfo.getStatus())) {
+                            // Step 2: Create or get existing session
                             createSession(tableNumber);
                         } else {
-                            onTableVerificationError("Bàn " + tableNumber + " đang được sử dụng");
+                            onTableVerificationError("Bàn " + tableNumber + " không hợp lệ");
                         }
                     } else {
                         onTableVerificationError("Bàn không tồn tại");

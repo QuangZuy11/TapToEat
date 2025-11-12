@@ -150,9 +150,90 @@ const getAllTables = async (req, res) => {
     }
 };
 
+// UC-10: Thanh toán và giải phóng session
+const completeSessionAndPayment = async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const { paymentMethod = 'cash' } = req.body;
+
+        // Tìm session
+        const session = await OrderSession.findById(sessionId);
+
+        if (!session) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy session'
+            });
+        }
+
+        if (session.status !== 'active') {
+            return res.status(400).json({
+                success: false,
+                message: 'Session không còn active'
+            });
+        }
+
+        // Tìm tất cả orders của session
+        const Order = require('../models').Order;
+        const orders = await Order.find({ sessionId: session._id });
+
+        // Kiểm tra tất cả món đã sẵn sàng chưa
+        for (const order of orders) {
+            for (const item of order.items) {
+                if (item.status !== 'ready') {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Vẫn còn món chưa sẵn sàng. Không thể thanh toán!'
+                    });
+                }
+            }
+        }
+
+        // Cập nhật session status
+        session.status = 'completed';
+        session.endTime = new Date();
+        session.paymentMethod = paymentMethod;
+        await session.save();
+
+        // Giải phóng bàn
+        const table = await Table.findOne({ tableNumber: session.tableNumber });
+        if (table) {
+            await table.release();
+        }
+
+        // Cập nhật tất cả orders sang trạng thái completed
+        await Order.updateMany(
+            { sessionId: session._id },
+            { $set: { status: 'completed' } }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Thanh toán thành công! Cảm ơn quý khách.',
+            data: {
+                sessionId: session._id,
+                sessionCode: session.sessionCode,
+                tableNumber: session.tableNumber,
+                totalAmount: session.totalAmount,
+                paymentMethod: paymentMethod,
+                startTime: session.startTime,
+                endTime: session.endTime
+            }
+        });
+    } catch (error) {
+        console.error('Error completing session payment:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi khi thanh toán',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     getTableByNumber,
     createOrGetSession,
     getSessionById,
-    getAllTables
+    getAllTables,
+    completeSessionAndPayment
 };

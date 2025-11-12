@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -326,8 +327,12 @@ public class CartActivity extends AppCompatActivity implements CartManager.CartC
         new AlertDialog.Builder(this)
                 .setTitle("✅ Đặt món thành công!")
                 .setMessage(message)
-                .setPositiveButton("OK", (dialog, which) -> {
-                    // Go back to menu
+                .setPositiveButton("Xem trạng thái", (dialog, which) -> {
+                    // Navigate to OrderStatusActivity
+                    Intent intent = new Intent(CartActivity.this, OrderStatusActivity.class);
+                    intent.putExtra("sessionId", sessionId);
+                    intent.putExtra("tableNumber", tableNumber);
+                    startActivity(intent);
                     finish();
                 })
                 .setCancelable(false)

@@ -427,6 +427,55 @@ curl -X PATCH http://localhost:9999/api/chef/orders/ORDER_ID/items/0/start
 
 ---
 
+---
+
+### 💳 UC-10: Thanh toán và kết thúc session
+
+#### Thanh toán và giải phóng bàn
+```
+POST /api/sessions/:sessionId/payment
+```
+
+**Body:**
+```json
+{
+  "paymentMethod": "cash"
+}
+```
+
+**Response (Success):**
+```json
+{
+  "success": true,
+  "message": "Thanh toán thành công! Cảm ơn quý khách.",
+  "data": {
+    "sessionId": "session_id",
+    "sessionCode": "TB05-20251112-001",
+    "tableNumber": 5,
+    "totalAmount": 450000,
+    "paymentMethod": "cash",
+    "startTime": "2025-11-12T10:00:00Z",
+    "endTime": "2025-11-12T12:30:00Z"
+  }
+}
+```
+
+**Response (Error - Món chưa sẵn sàng):**
+```json
+{
+  "success": false,
+  "message": "Vẫn còn món chưa sẵn sàng. Không thể thanh toán!"
+}
+```
+
+**Note:** 
+- Chỉ có thể thanh toán khi tất cả món ở trạng thái `ready`
+- Sau khi thanh toán, session sẽ chuyển sang `completed`
+- Bàn sẽ được giải phóng về trạng thái `available`
+- Tất cả orders sẽ được cập nhật sang `completed`
+
+---
+
 ## Notes for Android Development
 
 1. **Base URL**: Thay `localhost` bằng IP máy tính khi test trên thiết bị thật
@@ -442,12 +491,17 @@ curl -X PATCH http://localhost:9999/api/chef/orders/ORDER_ID/items/0/start
 
 5. **Local Storage**: Lưu `sessionId` trong SharedPreferences để khách có thể tiếp tục session
 
+6. **Session Management**: 
+   - Khi nhập số bàn, kiểm tra session hiện tại
+   - Cho phép truy cập session `occupied` để xem giỏ hàng và trạng thái món
+   - Khi thanh toán, session sẽ được kết thúc và bàn được giải phóng
+
 ---
 
 ## Sequence Diagram - Customer Flow
 
 ```
-Customer → Check Table → Create Session → View Menu → Add to Cart → Create Order → Track Status
+Customer → Check Table → Create/Get Session → View Menu → Add to Cart → Create Order → Track Status → Payment → End Session
 ```
 
 ## Sequence Diagram - Chef Flow

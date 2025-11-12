@@ -18,7 +18,7 @@
         app:navigationIcon="@drawable/ic_arrow_back"
         app:navigationIconTint="@color/white" />
 
-    <!-- Refresh Button -->
+    <!-- Top Control Bar with Home Icon -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -45,6 +45,19 @@
             app:icon="@drawable/ic_refresh"
             app:iconSize="18dp"
             android:backgroundTint="@color/primary"
+            style="@style/Widget.Material3.Button"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnHome"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text=""
+            android:textSize="14sp"
+            app:cornerRadius="18dp"
+            app:icon="@drawable/ic_home"
+            app:iconSize="20dp"
+            android:backgroundTint="@color/green_dark"
+            android:layout_marginStart="8dp"
             style="@style/Widget.Material3.Button"/>
     </LinearLayout>
 
@@ -87,7 +100,8 @@
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewOrders"
@@ -97,5 +111,62 @@
             android:clipToPadding="false" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!-- Payment Button at Bottom -->
+    <LinearLayout
+        android:id="@+id/layoutPaymentButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/white"
+        android:elevation="8dp"
+        android:padding="16dp">
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/gray_light"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Payment Info -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Tất cả món:"
+                android:textSize="16sp"
+                android:textColor="@color/gray_dark" />
+
+            <TextView
+                android:id="@+id/tvOrderStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chờ xác nhận"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/orange" />
+        </LinearLayout>
+
+        <!-- Payment Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPayment"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Thanh Toán"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:cornerRadius="8dp"
+            android:backgroundTint="@color/green_dark"
+            android:enabled="false"
+            android:alpha="0.5"
+            style="@style/Widget.Material3.Button"/>
+    </LinearLayout>
 
 </LinearLayout>

@@ -16,8 +16,12 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.tabs.TabLayout;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -68,7 +72,6 @@ public class ChefDashboardActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e(TAG, "Error in ChefDashboard onCreate", e);
             Toast.makeText(this, "Lỗi khởi tạo Chef Dashboard: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            finish();
         }
     }
 
@@ -117,7 +120,8 @@ public class ChefDashboardActivity extends AppCompatActivity {
             new ChefOrderAdapter.OnItemStatusChangeListener() {
                 @Override
                 public void onItemStatusChanged(String orderId, String itemId, String newStatus) {
-                    onItemStatusChanged(orderId, itemId, newStatus);
+                    // Call the Activity's method, not recursively call itself
+                    ChefDashboardActivity.this.onItemStatusChanged(orderId, itemId, newStatus);
                 }
             });
         recyclerViewOrders.setLayoutManager(new LinearLayoutManager(this));
@@ -161,12 +165,16 @@ public class ChefDashboardActivity extends AppCompatActivity {
     }
 
     private void loadAllOrders() {
-        Log.d(TAG, "Loading chef orders for current filter: " + currentFilter);
+        Log.d(TAG, "Loading all chef orders (will filter by item status in frontend)");
+        swipeRefreshLayout.setRefreshing(true);
         
-        // Get status filter for current tab
-        List<String> statusFilter = getStatusFilterForTab();
+        // Load ALL orders without status filter, then filter by item status in frontend
+        List<String> allStatuses = new ArrayList<>();
+        allStatuses.add("pending");
+        allStatuses.add("preparing");
+        allStatuses.add("ready");
         
-        apiService.getChefOrders(statusFilter).enqueue(new Callback<ApiService.ChefOrdersResponse>() {
+        apiService.getChefOrders(allStatuses).enqueue(new Callback<ApiService.ChefOrdersResponse>() {
             @Override
             public void onResponse(Call<ApiService.ChefOrdersResponse> call, 
                                  Response<ApiService.ChefOrdersResponse> response) {
@@ -178,37 +186,41 @@ public class ChefDashboardActivity extends AppCompatActivity {
                         List<OrderResponse> orders = ordersResponse.getData();
                         
                         if (orders != null) {
-                            allOrders.clear();
-                            allOrders.addAll(orders);
-                            filterOrders();
-                            Log.d(TAG, "Loaded " + orders.size() + " orders for filter: " + currentFilter);
-                            
-                            // Update tab badges with stats
-                            if (ordersResponse.getStats() != null) {
-                                updateTabBadges(ordersResponse.getStats());
-                            }
+                            // Update on UI thread to avoid race condition
+                            runOnUiThread(() -> {
+                                allOrders.clear();
+                                allOrders.addAll(orders);
+                                filterOrders();
+                                Log.d(TAG, "Loaded " + orders.size() + " total orders, filtered to " + filteredOrders.size() + " for tab: " + currentFilter);
+                            });
                         } else {
                             Log.w(TAG, "No orders data received");
-                            allOrders.clear();
-                            filterOrders();
+                            runOnUiThread(() -> {
+                                allOrders.clear();
+                                filterOrders();
+                            });
                         }
                     } else {
                         Log.e(TAG, "Response not successful: " + response.code());
                         if (response.code() == 404) {
-                            // API endpoint not implemented yet, show empty state
-                            Log.i(TAG, "Chef orders endpoint not implemented, showing empty state");
-                            allOrders.clear();
-                            filterOrders();
+                            runOnUiThread(() -> {
+                                allOrders.clear();
+                                filterOrders();
+                            });
                         } else {
-                            Toast.makeText(ChefDashboardActivity.this, 
-                                "Không thể tải danh sách đơn hàng (Lỗi: " + response.code() + ")", 
-                                Toast.LENGTH_SHORT).show();
+                            runOnUiThread(() -> {
+                                Toast.makeText(ChefDashboardActivity.this, 
+                                    "Không thể tải danh sách đơn hàng (Lỗi: " + response.code() + ")", 
+                                    Toast.LENGTH_SHORT).show();
+                            });
                         }
                     }
                 } catch (Exception e) {
                     Log.e(TAG, "Error processing chef orders response", e);
-                    Toast.makeText(ChefDashboardActivity.this, 
-                        "Lỗi xử lý dữ liệu đơn hàng", Toast.LENGTH_SHORT).show();
+                    runOnUiThread(() -> {
+                        Toast.makeText(ChefDashboardActivity.this, 
+                            "Lỗi xử lý dữ liệu đơn hàng", Toast.LENGTH_SHORT).show();
+                    });
                 }
             }
 
@@ -217,15 +229,16 @@ public class ChefDashboardActivity extends AppCompatActivity {
                 swipeRefreshLayout.setRefreshing(false);
                 Log.e(TAG, "Failed to load chef orders", t);
                 
-                if (t.getMessage() != null && t.getMessage().contains("404")) {
-                    // Chef API not implemented yet, show empty state
-                    Log.w(TAG, "Chef API not implemented, showing empty state");
-                    allOrders.clear();
-                    filterOrders();
-                } else {
-                    Toast.makeText(ChefDashboardActivity.this, 
-                        "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
+                runOnUiThread(() -> {
+                    if (t.getMessage() != null && t.getMessage().contains("404")) {
+                        Log.w(TAG, "Chef API not implemented, showing empty state");
+                        allOrders.clear();
+                        filterOrders();
+                    } else {
+                        Toast.makeText(ChefDashboardActivity.this, 
+                            "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
     }
@@ -282,12 +295,83 @@ public class ChefDashboardActivity extends AppCompatActivity {
     }
 
     private void filterOrders() {
+        Log.d(TAG, "=== FILTERING ORDERS ===");
+        Log.d(TAG, "Current filter: " + currentFilter);
+        Log.d(TAG, "Total orders before filter: " + allOrders.size());
+        
         filteredOrders.clear();
+        
         for (OrderResponse order : allOrders) {
-            if (currentFilter.equals(order.getStatus())) {
+            boolean shouldInclude = false;
+            
+            // Check if order has items matching the current filter
+            if (order.getItems() != null && !order.getItems().isEmpty()) {
+                int pendingCount = 0;
+                int preparingCount = 0;
+                int readyCount = 0;
+                
+                // Count items by status
+                for (ApiService.OrderItemResponse item : order.getItems()) {
+                    String itemStatus = item.getStatus();
+                    if ("pending".equals(itemStatus)) pendingCount++;
+                    else if ("preparing".equals(itemStatus)) preparingCount++;
+                    else if ("ready".equals(itemStatus)) readyCount++;
+                }
+                
+                int totalItems = order.getItems().size();
+                Log.d(TAG, "Order " + order.getId() + " - Total: " + totalItems + 
+                    ", Pending: " + pendingCount + ", Preparing: " + preparingCount + ", Ready: " + readyCount);
+                
+                switch (currentFilter) {
+                    case "pending":
+                        // Show if ANY item is still pending
+                        shouldInclude = (pendingCount > 0);
+                        break;
+                        
+                    case "preparing":
+                        // Show if ANY item is being prepared
+                        shouldInclude = (preparingCount > 0);
+                        break;
+                        
+                    case "ready":
+                        // Show if ALL items are ready
+                        shouldInclude = (readyCount == totalItems && totalItems > 0);
+                        break;
+                }
+                
+                Log.d(TAG, "Order " + order.getId() + " shouldInclude: " + shouldInclude);
+            }
+            
+            if (shouldInclude) {
                 filteredOrders.add(order);
             }
         }
+        
+        Log.d(TAG, "Orders after filter: " + filteredOrders.size());
+        Log.d(TAG, "=== END FILTERING ===");
+        
+        // Sort orders by creation time (oldest first = priority)
+        filteredOrders.sort((order1, order2) -> {
+            try {
+                String time1Str = order1.getCreatedAt();
+                String time2Str = order2.getCreatedAt();
+                
+                if (time1Str == null || time2Str == null) {
+                    return 0;
+                }
+                
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+                Date time1 = dateFormat.parse(time1Str);
+                Date time2 = dateFormat.parse(time2Str);
+                
+                if (time1 != null && time2 != null) {
+                    return time1.compareTo(time2);
+                }
+            } catch (ParseException e) {
+                Log.w(TAG, "Error parsing order time", e);
+            }
+            return 0;
+        });
         
         orderAdapter.notifyDataSetChanged();
         
@@ -372,65 +456,131 @@ public class ChefDashboardActivity extends AppCompatActivity {
     
     // Method to handle individual item status changes
     private void onItemStatusChanged(String orderId, String itemId, String newStatus) {
-        Log.d(TAG, "Updating item status - OrderId: " + orderId + ", ItemId: " + itemId + ", Status: " + newStatus);
-        
-        // Convert itemId to itemIndex (assuming itemId is the index as string)
-        int itemIndex;
-        try {
-            itemIndex = Integer.parseInt(itemId);
-        } catch (NumberFormatException e) {
-            Log.e(TAG, "Invalid item ID format: " + itemId);
-            Toast.makeText(this, "Lỗi: ID món ăn không hợp lệ", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        
-        ApiService.StatusUpdateRequest request = new ApiService.StatusUpdateRequest(newStatus);
-        Call<ApiService.ApiResponse<OrderResponse>> call;
-        
-        // Use appropriate API endpoint based on status
-        switch (newStatus) {
-            case "preparing":
-                call = apiService.startOrderItem(orderId, itemIndex, request);
-                break;
-            case "ready":
-                call = apiService.completeOrderItem(orderId, itemIndex, request);
-                break;
-            default:
-                Log.w(TAG, "Unsupported item status update: " + newStatus);
-                return;
-        }
-        
-        call.enqueue(new Callback<ApiService.ApiResponse<OrderResponse>>() {
-            @Override
-            public void onResponse(Call<ApiService.ApiResponse<OrderResponse>> call, 
-                                 Response<ApiService.ApiResponse<OrderResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    ApiService.ApiResponse<OrderResponse> apiResponse = response.body();
-                    if (apiResponse.isSuccess()) {
-                        Log.d(TAG, "Item status updated successfully");
-                        Toast.makeText(ChefDashboardActivity.this, 
-                            "Cập nhật món ăn thành công", Toast.LENGTH_SHORT).show();
-                        // Refresh orders to show updated status
-                        loadAllOrders();
-                    } else {
-                        Log.e(TAG, "API returned error: " + apiResponse.getMessage());
-                        Toast.makeText(ChefDashboardActivity.this, 
-                            "Lỗi: " + apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    Log.e(TAG, "Update item status failed: " + response.code());
-                    Toast.makeText(ChefDashboardActivity.this, 
-                        "Không thể cập nhật món ăn", Toast.LENGTH_SHORT).show();
+        // Run in background thread to avoid ANR
+        new Thread(() -> {
+            try {
+                Log.d(TAG, "=== UPDATE ITEM STATUS START ===");
+                Log.d(TAG, "OrderId: " + orderId);
+                Log.d(TAG, "ItemId: " + itemId);
+                Log.d(TAG, "NewStatus: " + newStatus);
+                
+                // Check if apiService is initialized
+                if (apiService == null) {
+                    Log.e(TAG, "!!! apiService is NULL !!!");
+                    runOnUiThread(() -> Toast.makeText(this, "Lỗi: Chưa kết nối API", Toast.LENGTH_SHORT).show());
+                    return;
                 }
-            }
+                
+                if (orderId == null || orderId.isEmpty()) {
+                    Log.e(TAG, "OrderId is null or empty!");
+                    runOnUiThread(() -> Toast.makeText(this, "Lỗi: Order ID không hợp lệ", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+                
+                if (itemId == null || itemId.isEmpty()) {
+                    Log.e(TAG, "ItemId is null or empty!");
+                    runOnUiThread(() -> Toast.makeText(this, "Lỗi: Item ID không hợp lệ", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+                
+                // Convert itemId to itemIndex (assuming itemId is the index as string)
+                int itemIndex;
+                try {
+                    itemIndex = Integer.parseInt(itemId);
+                    Log.d(TAG, "Parsed itemIndex: " + itemIndex);
+                } catch (NumberFormatException e) {
+                    Log.e(TAG, "Invalid item ID format: " + itemId, e);
+                    runOnUiThread(() -> Toast.makeText(this, "Lỗi: ID món ăn không hợp lệ", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+                
+                ApiService.StatusUpdateRequest request = new ApiService.StatusUpdateRequest(newStatus);
+                Call<ApiService.ApiResponse<OrderResponse>> call = null;
+                
+                // Use appropriate API endpoint based on status
+                switch (newStatus) {
+                    case "preparing":
+                        Log.d(TAG, "Calling startOrderItem API for orderId=" + orderId + ", itemIndex=" + itemIndex);
+                        try {
+                            call = apiService.startOrderItem(orderId, itemIndex, request);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Exception creating startOrderItem call", e);
+                            runOnUiThread(() -> Toast.makeText(this, "Lỗi tạo API call: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                            return;
+                        }
+                        break;
+                    case "ready":
+                        Log.d(TAG, "Calling completeOrderItem API for orderId=" + orderId + ", itemIndex=" + itemIndex);
+                        try {
+                            call = apiService.completeOrderItem(orderId, itemIndex, request);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Exception creating completeOrderItem call", e);
+                            runOnUiThread(() -> Toast.makeText(this, "Lỗi tạo API call: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                            return;
+                        }
+                        break;
+                    default:
+                        Log.w(TAG, "Unsupported item status update: " + newStatus);
+                        runOnUiThread(() -> Toast.makeText(this, "Trạng thái không hợp lệ: " + newStatus, Toast.LENGTH_SHORT).show());
+                        return;
+                }
+                
+                if (call == null) {
+                    Log.e(TAG, "API call is NULL after switch!");
+                    runOnUiThread(() -> Toast.makeText(this, "Lỗi: Không thể tạo API request", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+                
+                Log.d(TAG, "Executing API call...");
+                call.enqueue(new Callback<ApiService.ApiResponse<OrderResponse>>() {
+                @Override
+                public void onResponse(Call<ApiService.ApiResponse<OrderResponse>> call, 
+                                     Response<ApiService.ApiResponse<OrderResponse>> response) {
+                    Log.d(TAG, "API Response received - Code: " + response.code());
+                    
+                    if (response.isSuccessful() && response.body() != null) {
+                        ApiService.ApiResponse<OrderResponse> apiResponse = response.body();
+                        if (apiResponse.isSuccess()) {
+                            Log.d(TAG, "Item status updated successfully");
+                            Toast.makeText(ChefDashboardActivity.this, 
+                                "Cập nhật món ăn thành công ✅", Toast.LENGTH_SHORT).show();
+                            // Refresh orders to show updated status
+                            loadAllOrders();
+                        } else {
+                            Log.e(TAG, "API returned error: " + apiResponse.getMessage());
+                            Toast.makeText(ChefDashboardActivity.this, 
+                                "Lỗi: " + apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Log.e(TAG, "Update item status failed: " + response.code());
+                        try {
+                            if (response.errorBody() != null) {
+                                String errorBody = response.errorBody().string();
+                                Log.e(TAG, "Error body: " + errorBody);
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error reading error body", e);
+                        }
+                        Toast.makeText(ChefDashboardActivity.this, 
+                            "Không thể cập nhật món ăn (Lỗi: " + response.code() + ")", Toast.LENGTH_SHORT).show();
+                    }
+                }
 
-            @Override
-            public void onFailure(Call<ApiService.ApiResponse<OrderResponse>> call, Throwable t) {
-                Log.e(TAG, "Update item status failed", t);
-                Toast.makeText(ChefDashboardActivity.this, 
-                    "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+                @Override
+                public void onFailure(Call<ApiService.ApiResponse<OrderResponse>> call, Throwable t) {
+                    Log.e(TAG, "Update item status failed", t);
+                    runOnUiThread(() -> Toast.makeText(ChefDashboardActivity.this, 
+                        "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show());
+                }
+            });
+            
+            Log.d(TAG, "=== UPDATE ITEM STATUS END ===");
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Exception in onItemStatusChanged", e);
+            runOnUiThread(() -> Toast.makeText(this, "Lỗi không xác định: " + e.getMessage(), Toast.LENGTH_LONG).show());
+        }
+        }).start(); // Start the background thread
     }
 
     @Override

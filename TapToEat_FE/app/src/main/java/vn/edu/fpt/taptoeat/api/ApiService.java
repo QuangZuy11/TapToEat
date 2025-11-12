@@ -44,7 +44,7 @@ public interface ApiService {
     Call<ApiResponse<OrderResponse>> placeOrder(@Body OrderRequest request);
     
     // UC-05: Get session orders
-    @GET("sessions/{sessionId}/orders")
+    @GET("orders/session/{sessionId}")
     Call<ApiResponse<List<OrderResponse>>> getSessionOrders(@Path("sessionId") String sessionId);
     
     // UC-06: Get all orders for chef
@@ -78,6 +78,10 @@ public interface ApiService {
     // UC-09: Update menu item availability
     @PATCH("chef/menu-items/{id}/availability")
     Call<ApiResponse<MenuItem>> updateMenuItemAvailability(@Path("id") String menuItemId, @Body AvailabilityRequest request);
+
+    // UC-10: Complete session and payment
+    @POST("sessions/{sessionId}/payment")
+    Call<ApiResponse<PaymentResponse>> completeSessionPayment(@Path("sessionId") String sessionId, @Body PaymentRequest request);
 
     // Response wrapper classes
     class ApiResponse<T> {
@@ -382,6 +386,57 @@ public interface ApiService {
 
         public String getOrderedAt() {
             return orderedAt;
+        }
+    }
+    
+    // UC-10: Payment Request/Response
+    class PaymentRequest {
+        private String paymentMethod;
+
+        public PaymentRequest(String paymentMethod) {
+            this.paymentMethod = paymentMethod;
+        }
+
+        public String getPaymentMethod() {
+            return paymentMethod;
+        }
+    }
+    
+    class PaymentResponse {
+        private String sessionId;
+        private String sessionCode;
+        private int tableNumber;
+        private double totalAmount;
+        private String paymentMethod;
+        private String startTime;
+        private String endTime;
+
+        public String getSessionId() {
+            return sessionId;
+        }
+
+        public String getSessionCode() {
+            return sessionCode;
+        }
+
+        public int getTableNumber() {
+            return tableNumber;
+        }
+
+        public double getTotalAmount() {
+            return totalAmount;
+        }
+
+        public String getPaymentMethod() {
+            return paymentMethod;
+        }
+
+        public String getStartTime() {
+            return startTime;
+        }
+
+        public String getEndTime() {
+            return endTime;
         }
     }
 }

@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import vn.edu.fpt.taptoeat.R;
+import vn.edu.fpt.taptoeat.api.ApiService;
 import vn.edu.fpt.taptoeat.api.ApiService.OrderResponse;
 
 import java.text.NumberFormat;
@@ -86,10 +87,18 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
 
             // Set status with color
             String status = order.getStatus();
-            setStatusBadge(status);
+            if (status != null && !status.isEmpty()) {
+                setStatusBadge(status);
+            } else {
+                setStatusBadge("unknown");
+            }
 
-            // Setup items RecyclerView
-            OrderItemAdapter itemAdapter = new OrderItemAdapter(order.getItems());
+            // Setup items RecyclerView - handle null items
+            List<ApiService.OrderItemResponse> items = order.getItems();
+            if (items == null || items.isEmpty()) {
+                items = new java.util.ArrayList<>();
+            }
+            OrderItemAdapter itemAdapter = new OrderItemAdapter(items);
             recyclerViewOrderItems.setAdapter(itemAdapter);
 
             // Format total price

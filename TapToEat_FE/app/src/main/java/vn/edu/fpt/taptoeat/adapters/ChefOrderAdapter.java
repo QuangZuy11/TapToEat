@@ -64,7 +64,7 @@ public class ChefOrderAdapter extends RecyclerView.Adapter<ChefOrderAdapter.View
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         OrderResponse order = orders.get(position);
-        holder.bind(order, listener);
+        holder.bind(order, listener, itemListener);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class ChefOrderAdapter extends RecyclerView.Adapter<ChefOrderAdapter.View
             recyclerViewItems.setNestedScrollingEnabled(false);
         }
 
-        public void bind(OrderResponse order, OnOrderStatusChangeListener listener) {
+        public void bind(OrderResponse order, OnOrderStatusChangeListener listener, OnItemStatusChangeListener itemListener) {
             // Order info
             String orderId = order.getOrderNumber() != null ? 
                     order.getOrderNumber() : 
@@ -122,51 +122,28 @@ public class ChefOrderAdapter extends RecyclerView.Adapter<ChefOrderAdapter.View
                 cardOrder.setStrokeWidth(0);
             }
 
-            // Setup items RecyclerView
-            ChefOrderItemAdapter itemAdapter = new ChefOrderItemAdapter(order.getItems());
+            // Setup items RecyclerView with item action listener
+            ChefOrderItemAdapter itemAdapter = new ChefOrderItemAdapter(order.getItems(), 
+                new ChefOrderItemAdapter.OnItemActionListener() {
+                    @Override
+                    public void onItemStatusChange(int itemIndex, String newStatus) {
+                        if (itemListener != null) {
+                            itemListener.onItemStatusChanged(order.getId(), String.valueOf(itemIndex), newStatus);
+                        }
+                    }
+                });
             recyclerViewItems.setAdapter(itemAdapter);
 
-            // Action button based on status
-            setupActionButton(order, listener);
+            // Hide the order-level action button - only use item-level buttons
+            if (btnAction != null) {
+                btnAction.setVisibility(View.GONE);
+            }
         }
 
         private void setupActionButton(OrderResponse order, OnOrderStatusChangeListener listener) {
-            String status = order.getStatus();
-            
-            switch (status) {
-                case "pending":
-                    btnAction.setText("Bắt đầu làm");
-                    btnAction.setBackgroundColor(Color.parseColor("#2196F3")); // Blue
-                    btnAction.setOnClickListener(v -> {
-                        if (listener != null) {
-                            listener.onStatusChanged(order, "preparing");
-                        }
-                    });
-                    break;
-                    
-                case "preparing":
-                    btnAction.setText("Món đã xong");
-                    btnAction.setBackgroundColor(Color.parseColor("#4CAF50")); // Green
-                    btnAction.setOnClickListener(v -> {
-                        if (listener != null) {
-                            listener.onStatusChanged(order, "ready");
-                        }
-                    });
-                    break;
-                    
-                case "ready":
-                    btnAction.setText("Đã phục vụ");
-                    btnAction.setBackgroundColor(Color.parseColor("#9E9E9E")); // Gray
-                    btnAction.setOnClickListener(v -> {
-                        if (listener != null) {
-                            listener.onStatusChanged(order, "served");
-                        }
-                    });
-                    break;
-                    
-                default:
-                    btnAction.setVisibility(View.GONE);
-                    break;
+            // Deprecated - now using item-level actions only
+            if (btnAction != null) {
+                btnAction.setVisibility(View.GONE);
             }
         }
 
