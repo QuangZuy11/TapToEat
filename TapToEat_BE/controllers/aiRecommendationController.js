@@ -80,6 +80,9 @@ async function getWeatherData() {
 
         const url = `${process.env.WEATHER_API_URL}?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=vi`;
 
+        // Helpful debug log for weather requests
+        console.log('Fetching weather from URL:', url);
+
         const response = await axios.get(url);
         const data = response.data;
 
@@ -94,7 +97,8 @@ async function getWeatherData() {
             time: new Date()
         };
     } catch (error) {
-        console.error('Error fetching weather:', error.message);
+        // Log full error details to help diagnose (status + body when available)
+        console.error('Error fetching weather:', error.response?.status, error.response?.data || error.message);
         // Return fallback weather data
         return {
             temperature: 28,
@@ -189,13 +193,51 @@ Trả về JSON format SAU ĐÂY (KHÔNG thêm markdown, code block hay text kh�
  */
 async function getGeminiRecommendations(prompt, menuItems) {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        // Try model from env first, then fall back to known available models
+        const candidates = [
+            process.env.GEMINI_MODEL,
+            'models/gemini-2.5-pro',
+            'models/gemini-2.5-flash',
+            'models/gemini-2.0-flash',
+            'models/gemini-2.0-flash-001'
+        ].filter(Boolean);
 
-        const result = await model.generateContent(prompt);
+        let result = null;
+        let usedModel = null;
+
+        const timeoutMs = parseInt(process.env.GEMINI_TIMEOUT_MS, 10) || 8000;
+
+        for (const candidate of candidates) {
+            try {
+                console.log('Attempting model:', candidate);
+                const m = genAI.getGenerativeModel({ model: candidate });
+
+                // Wrap generateContent with a timeout so FE doesn't hang waiting indefinitely
+                const genPromise = m.generateContent(prompt);
+                result = await Promise.race([
+                    genPromise,
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('model_timeout')), timeoutMs))
+                ]);
+
+                usedModel = candidate;
+                break;
+            } catch (err) {
+                if (err.message === 'model_timeout') {
+                    console.warn(`Model ${candidate} timed out after ${timeoutMs}ms`);
+                } else {
+                    console.warn(`Model ${candidate} failed:`, err.response?.status, err.response?.data || err.message);
+                }
+                // try next candidate
+            }
+        }
+
+        if (!result) {
+            throw new Error('All model attempts failed');
+        }
+
         const response = await result.response;
         const text = response.text();
-
-        console.log('Raw Gemini response:', text);
+        console.log('Raw Gemini response (model ' + usedModel + '):', text);
 
         // Parse JSON response
         let jsonText = text.trim();
